@@ -1,5 +1,5 @@
 name: CI/CD Pipeline
-# unit tests > SAST > Owasp dependency check (SCA) > build > DAST
+# unit tests > SAST > Owasp dependency check (SCA) > build > DAST > AI?
 on:
     pull_request:
         branches: [ main ]
