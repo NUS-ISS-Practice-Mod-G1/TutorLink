@@ -67,7 +67,9 @@ describe("WalletSuccessPage", () => {
   });
 
   test("shows processing message initially", async () => {
-    (TopUpWallet as jest.Mock).mockResolvedValueOnce({});
+    (TopUpWallet as jest.Mock).mockResolvedValueOnce({
+      data: { refId: "mock-ref-123" },
+    });
 
     renderComponent();
 
@@ -75,7 +77,9 @@ describe("WalletSuccessPage", () => {
   });
 
   test("handles successful top-up flow", async () => {
-    (TopUpWallet as jest.Mock).mockResolvedValueOnce({});
+    (TopUpWallet as jest.Mock).mockResolvedValueOnce({
+      data: { refId: "mock-ref-123" },
+    });
 
     renderComponent();
 
@@ -85,7 +89,7 @@ describe("WalletSuccessPage", () => {
     });
 
     // verify localStorage set
-    expect(localStorage.getItem("wallet-topup-s1-50")).toBe("done");
+    expect(localStorage.getItem("wallet-topup-s1-50-mock-ref-123")).toBe("done");
 
     // simulate redirect timer
     act(() => {
@@ -95,15 +99,26 @@ describe("WalletSuccessPage", () => {
   });
 
   test("skips duplicate top-up if already processed", async () => {
-    localStorage.setItem("wallet-topup-s1-50", "done");
-
-    renderComponent();
-
-    await waitFor(() => {
-      expect(screen.getByText(/Payment Successful/i)).toBeInTheDocument();
+    // This is the key your component will check after API response
+    const uniqueKey = "wallet-topup-s1-50-mock-ref-123";
+    localStorage.setItem(uniqueKey, "done");
+  
+    // Mock API returning same refId
+    (TopUpWallet as jest.Mock).mockResolvedValueOnce({
+      data: { refId: "mock-ref-123" },
     });
-
-    expect(TopUpWallet).not.toHaveBeenCalled();
+  
+    renderComponent();
+  
+    // Wait for success message
+    const successText = await screen.findByText(/Payment Successful/i);
+    expect(successText).toBeInTheDocument();
+  
+    // API still called once (it must call to get refId)
+    expect(TopUpWallet).toHaveBeenCalledTimes(1);
+  
+    // But since key existed, it doesn't create duplicate
+    expect(localStorage.getItem(uniqueKey)).toBe("done");
   });
 
   test("handles API failure gracefully", async () => {

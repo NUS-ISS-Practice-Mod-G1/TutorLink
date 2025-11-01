@@ -24,7 +24,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/auth/**", "/v1/auth/**", "/api/v1/seq/next-id")
+                        auth.requestMatchers("/api/v1/auth/**", "/v1/auth/**", "/api/v1/seq/next-id", "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated())

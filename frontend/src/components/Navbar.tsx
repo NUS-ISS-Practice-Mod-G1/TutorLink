@@ -5,7 +5,7 @@ import { navConfig } from "@/components/NavLinks";
 import { useEffect, useState } from "react";
 import { GetAdminByUserId } from "@/api/adminAPI";
 import NotificationsModal from "./NotificationsModal";
-import { fetchNotifications, markNotificationAsRead } from "@/api/notificationAPI";
+import { fetchNotifications, markNotificationAsRead, subscribeToNotifications } from "@/api/notificationAPI";
 import { NotificationType } from "@/types/NotificationType";
 import { BellIcon } from "@heroicons/react/24/outline";
 
@@ -28,25 +28,16 @@ const Navbar = () => {
 
     // 1 Fetch existing notifications
     fetchNotifications(user.id, user.token)
-      .then((res) => setNotifications(res.data))
-      .catch((err) => console.error("Failed to fetch notifications:", err));
+    .then((res) => setNotifications(res.data))
+    .catch(console.error);
 
     // 2 SSE subscription
-    const eventSource = new EventSource(
-      `http://localhost:8080/api/notifications/stream/${user.id}`
+    const eventSource = subscribeToNotifications(user.id, (notif) =>
+      setNotifications((prev) => [notif, ...prev])
     );
 
-    eventSource.onmessage = (event) => {
-      const newNotification: NotificationType = JSON.parse(event.data);
-      setNotifications((prev) => [newNotification, ...prev]);
-    };
-
-    eventSource.onerror = (err) => {
-      console.error("SSE error:", err);
-      eventSource.close();
-    };
-
     return () => eventSource.close();
+    
   }, [user?.id, user?.token]);
 
   // -------------------------

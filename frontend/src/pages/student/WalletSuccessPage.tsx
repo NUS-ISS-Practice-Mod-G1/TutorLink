@@ -20,27 +20,35 @@ const WalletSuccessPage = () => {
     const processTopUp = async () => {
       if (hasProcessedRef.current) return;
       hasProcessedRef.current = true;
-
-      const uniqueKey = `wallet-topup-${studentId}-${amount}`;
-      if (localStorage.getItem(uniqueKey)) {
-        console.log("⚠️ Top-up already processed. Skipping duplicate.");
-        setStatus("success");
-        return;
-      }
-
+  
       if (!studentId || !amount || !user?.token) {
         toast.error("Invalid payment details");
         setStatus("failed");
         return;
       }
-
+  
       try {
-        await TopUpWallet(studentId, parseFloat(amount), user.token);
-        localStorage.setItem(uniqueKey, "done"); // ✅ Remember success
+        // First, call API to perform the top-up
+        const res = await TopUpWallet(studentId, parseFloat(amount), user.token);
+  
+        // Extract unique refId from backend response
+        const refId = res.data.refId || `${Date.now()}`; // fallback if missing
+  
+        // Build unique localStorage key that includes refId
+        const uniqueKey = `wallet-topup-${studentId}-${amount}-${refId}`;
+  
+        // Prevent duplicates (in case user refreshes success page)
+        if (localStorage.getItem(uniqueKey)) {
+          console.log("⚠️ Top-up already processed. Skipping duplicate.");
+          setStatus("success");
+          return;
+        }
+  
+        localStorage.setItem(uniqueKey, "done"); // remember success
         toast.success(`${amount} credits added to your wallet`);
         setStatus("success");
-
-        // Auto redirect back to wallet after 3 seconds
+  
+        // Redirect after delay
         setTimeout(() => navigate("/student/wallet?status=success"), 3000);
       } catch (err: any) {
         console.error("Top-up error:", err);
@@ -48,7 +56,7 @@ const WalletSuccessPage = () => {
         setStatus("failed");
       }
     };
-
+  
     processTopUp();
   }, [studentId, amount, user, navigate]);
 

@@ -63,17 +63,18 @@ public class WalletService {
 
     /** Add credits to wallet (Stripe top-up success). */
     @Transactional
-    public Wallet addCredits(String userId, BigDecimal amount, String refId) {
+    public WalletTransaction addCredits(String userId, BigDecimal amount, String refId) {
         Wallet wallet = getWallet(userId);
         wallet.setBalance(wallet.getBalance().add(amount));
         wallet.setUpdatedAt(LocalDateTime.now());
         walletRepo.save(wallet);
 
-        txnRepo.save(new WalletTransaction(
-                null, userId, "PURCHASE", amount,
-                "Top-up credits", refId, LocalDateTime.now()
-        ));
-        return wallet;
+        WalletTransaction newTxn = new WalletTransaction(
+            null, userId, "PURCHASE", amount,
+            "Top-up credits", refId, LocalDateTime.now());
+
+        txnRepo.save(newTxn);
+        return newTxn;
     }
 
     /** Deduct credits for confirmed booking. */

@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { setUser } from "@/redux/userSlice";
 import { GetAdminByUserId } from "@/api/adminAPI";
-import { fetchNotifications, markNotificationAsRead } from "@/api/notificationAPI";
+import { fetchNotifications, markNotificationAsRead, subscribeToNotifications } from "@/api/notificationAPI";
 import { navConfig } from "@/components/NavLinks";
 import type { MockedFunction } from "jest-mock";
 import type { NotificationType } from "@/types/NotificationType";
@@ -35,6 +35,15 @@ jest.mock("@/api/adminAPI", () => ({
 jest.mock("@/api/notificationAPI", () => ({
   fetchNotifications: jest.fn(),
   markNotificationAsRead: jest.fn(),
+  subscribeToNotifications: jest.fn((_id, onMessage) => {
+    onMessage({
+      id: "n1",
+      message: "Test notification",
+      read: false,
+      type: "BOOKING",
+    });
+    return { close: jest.fn() };
+  }),
 }));
 
 jest.mock("@/components/NavLinks", () => ({

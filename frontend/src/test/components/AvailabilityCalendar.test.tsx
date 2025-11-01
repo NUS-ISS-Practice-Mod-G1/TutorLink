@@ -92,8 +92,9 @@ describe("AvailabilityCalendar", () => {
   });
 
   it("renders tutor view and allows clicking on pending slot", async () => {
-    const today = new Date();
-    const dateStr = today.toISOString().split("T")[0];
+    // pick Monday (enabled in baseAvailability)
+    const monday = new Date("2025-11-03"); // a known Monday
+    const dateStr = monday.toISOString().split("T")[0];
 
     render(
       <AvailabilityCalendar
@@ -104,11 +105,16 @@ describe("AvailabilityCalendar", () => {
       />
     );
 
-    const pendingText = screen.getByText(/Pending/i);
-    const pendingCell = pendingText.closest("div");
-    if (pendingCell) fireEvent.click(pendingCell);
+    // Wait for DOM to render fully
+    await waitFor(() => {
+      const pendingText = screen.getByText("Pending");
+      expect(pendingText).toBeInTheDocument();
 
-    await waitFor(() => expect(mockOnSlotClick).toHaveBeenCalled());
+      // Click its parent cell
+      fireEvent.click(pendingText.closest("div")!);
+    });
+
+    expect(mockOnSlotClick).toHaveBeenCalled();
   });
 
   it("renders different booking statuses visually", () => {

@@ -51,3 +51,22 @@ export const createNotification = async (
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+
+export const subscribeToNotifications = (
+  userId: string,
+  onMessage: (notif: NotificationType) => void,
+  onError?: (err: any) => void
+) => {
+
+  const eventSource = new EventSource(`${BASE_URL}/sse/notifications/stream/${userId}`);
+
+  eventSource.onmessage = (event) => onMessage(JSON.parse(event.data));
+  eventSource.onerror = (err) => {
+    console.error("SSE error:", err);
+    if (onError) onError(err);
+    eventSource.close();
+  };
+
+  return eventSource; // so caller can close it on cleanup
+};
