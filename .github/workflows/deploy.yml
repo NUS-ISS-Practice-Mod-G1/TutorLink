@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       # ----- Determine changes only for push -----
       - name: Determine base and head commits
         id: sha
@@ -37,7 +37,7 @@ jobs:
         run: |
           echo "Base SHA: ${{ steps.sha.outputs.base_sha }}"
           echo "Head SHA: ${{ steps.sha.outputs.head_sha }}"
-          git log --oneline -5  
+          git log --oneline -5
 
       # ----- Check modified paths (only push) -----
       - name: Check modified paths
@@ -64,7 +64,7 @@ jobs:
           else
             echo "frontend=${{ steps.changes.outputs.frontend }}" >> $GITHUB_OUTPUT
             echo "backend=${{ steps.changes.outputs.backend }}" >> $GITHUB_OUTPUT
-          fi         
+          fi
 
       # ----- Show detected changes -----
       - name: Show detected changes
@@ -102,6 +102,30 @@ jobs:
             docker save backend:latest -o docker-images/backend.tar
           fi
 
+      # ---- Scan Backend Image ----
+      - name: Trivy Backend image vulnerability scanning
+        if: ${{ steps.deploy_flags.outputs.backend == 'true' }}
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          input: "docker-images/backend.tar"
+          format: "table"
+          exit-code: "1" # fail job if HIGH/CRITICAL found
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+      # ---- Scan Frontend Image ----
+      - name: Scan Frontend Docker image with Trivy
+        if: ${{ steps.deploy_flags.outputs.frontend == 'true' }}
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          input: "docker-images/frontend.tar"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
       # ----- Copy Docker images + docker-compose.yml to EC2 -----
       - name: Copy Docker images via SCP
         if: ${{ steps.deploy_flags.outputs.frontend == 'true' || steps.deploy_flags.outputs.backend == 'true' }}
@@ -115,7 +139,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-images/frontend.tar,docker-images/backend.tar"
           target: "/home/ubuntu/TutorLink/"
-      
 
       # ----- Deploy containers on EC2 -----
       - name: Deploy Docker images on EC2
@@ -127,24 +150,24 @@ jobs:
           script: |
             set -e
             cd /home/ubuntu/TutorLink/docker-images
-      
+
             echo "Loading new Docker images..."
             if [ -f frontend.tar ]; then
               sudo docker load -i frontend.tar
             fi
-      
+
             if [ -f backend.tar ]; then
               sudo docker load -i backend.tar
             fi
-      
+
             echo "Rebuilding containers..."
             cd /home/ubuntu/TutorLink
-      
+
             # Recreate only updated services
             if [ -f /home/ubuntu/TutorLink/docker-images/frontend.tar ]; then
               sudo docker compose up -d --force-recreate frontend
             fi
-      
+
             if [ -f /home/ubuntu/TutorLink/docker-images/backend.tar ]; then
               sudo docker compose up -d --force-recreate backend
             fi

@@ -57,7 +57,7 @@ jobs:
   # ----------------- JMETER -----------------
   jmeter:
     name: Sanity Test - Apache JMeter
-    # if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: development
     permissions:
