@@ -100,6 +100,7 @@ public class TutorServiceImpl implements TutorService {
                 ? new HashMap<>(updatedData.getAvailability())
                 : new HashMap<>()
         );
+        stagedTutor.setProfileImageUrl(tutor.getProfileImageUrl());
 
         List<QualificationFile> activeQualifications = Optional.ofNullable(tutor.getQualifications())
             .orElseGet(ArrayList::new);

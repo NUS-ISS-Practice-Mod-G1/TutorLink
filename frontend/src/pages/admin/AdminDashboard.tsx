@@ -228,7 +228,7 @@ const AdminDashboard = () => {
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={metrics.transactionMetrics.monthlyEarnings}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
+                      <XAxis dataKey="month" padding={{ left: 100, right: 100 }} />
                       <YAxis tickFormatter={(value) => `$${value.toFixed(2)}`} />
                       <Tooltip formatter={(value: number) => `SGD ${value.toFixed(2)}`} />
                       <Line
