@@ -3,7 +3,7 @@ import { useAppSelector } from "@/redux/store";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Navbar from "@/components/Navbar";
-import { GetTutorProfile } from "@/api/tutorAPI";
+import { GetTutorFileViewUrl, GetTutorProfile } from "@/api/tutorAPI";
 import ProfilePicModal from "@/components/ProfilePicModal";
 import defaultProfile from "../../assets/default-profile-pic.jpg";
 import { Tutor } from "@/types/TutorType";
@@ -244,6 +244,27 @@ const TutorDashboard = () => {
       console.log("dates", res.data);
     } catch (err) {
       console.error("Failed to fetch bookings:", err);
+    }
+  };
+
+  const handleViewFile = async (fileKey: string) => {
+    try {
+      if (!user?.token) {
+        toast.error("Missing token, please login again.");
+        return;
+      }
+  
+      const res = await GetTutorFileViewUrl(user.token, fileKey);
+      const presignedUrl = res.data;
+  
+      if (presignedUrl) {
+        window.open(presignedUrl, "_blank");
+      } else {
+        toast.error("Failed to retrieve file URL");
+      }
+    } catch (err) {
+      console.error("Error viewing file:", err);
+      toast.error("Unable to load file. Please try again later.");
     }
   };
 
@@ -762,7 +783,7 @@ const TutorDashboard = () => {
                           )}
                         </div>
                         <a
-                          href={q.path}
+                          onClick={() => handleViewFile(q.path)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline text-sm"

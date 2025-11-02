@@ -3,23 +3,24 @@ import { useEffect, useState } from "react";
 const AvailabilityPicker = ({ value, onChange }: AvailabilityPickerProps) => {
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  const defaultAvailability = daysOfWeek.reduce((acc, day) => {
+    acc[day] = { start: "09:00", end: "17:00", enabled: false };
+    return acc;
+  }, {} as DayAvailability);
+
   const [availability, setAvailability] = useState<DayAvailability>(
-    value ||
-      daysOfWeek.reduce((acc, day) => {
-        acc[day] = { start: "09:00", end: "17:00", enabled: false };
-        return acc;
-      }, {} as DayAvailability)
+    value ? { ...defaultAvailability, ...value } : defaultAvailability
   );
 
   useEffect(() => {
     if (onChange) {
-      onChange(availability); // notify parent whenever it changes
+      onChange(availability);
     }
   }, [availability]);
 
   useEffect(() => {
-    if (value) {
-      setAvailability(value); // update local state when parent value changes
+    if (value && JSON.stringify(value) !== JSON.stringify(availability)) {
+      setAvailability((prev) => ({ ...prev, ...value }));
     }
   }, [value]);
 
