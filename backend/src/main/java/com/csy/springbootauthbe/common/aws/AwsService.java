@@ -7,17 +7,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.ChecksumAlgorithm;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AwsService {
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
     private static final SanitizedLogger logger = SanitizedLogger.getLogger(AwsService.class);
     @Value("${aws.s3.bucket}")
     public String bucketName;
@@ -100,6 +106,30 @@ public class AwsService {
         int idx = url.indexOf(".amazonaws.com/");
         if (idx == -1) return null;
         return url.substring(idx + ".amazonaws.com/".length());
+    }
+
+    /**
+     * Generate a presigned URL for viewing a private file (valid for 10 minutes)
+     */
+    public String generatePresignedUrl(String key) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+            URL presignedUrl = s3Presigner.presignGetObject(presignRequest).url();
+            logger.info("Generated presigned URL for key: {}", key);
+            return presignedUrl.toString();
+        } catch (Exception e) {
+            logger.error("Failed to generate presigned URL for key: {}", key, e);
+            throw new RuntimeException("Failed to generate presigned URL for key: " + key, e);
+        }
     }
 
 

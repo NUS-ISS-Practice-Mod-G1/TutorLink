@@ -165,7 +165,7 @@ const ViewTutorProfile = () => {
       return;
     }
   
-    if (!profile.qualifications || profile.qualifications.length === 0) {
+    if (!profile.fileUploads || profile.fileUploads.length === 0) {
       toast.error("Please upload at least one qualification file.");
       return;
     }

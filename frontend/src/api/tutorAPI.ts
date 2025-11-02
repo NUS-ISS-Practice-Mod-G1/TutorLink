@@ -28,6 +28,16 @@ export const GetTutorProfile = async (
   return await api.get(url);
 };
 
+export const GetTutorFileViewUrl = async (
+  token: string,
+  fileKey: string
+): Promise<AxiosResponse<string>> => {
+  const api = getApiInstance(token);
+  const url = `${BASE_URL}/qualifications/url?key=${encodeURIComponent(fileKey)}`;
+  return await api.get(url);
+};
+
+
 export const UploadTutorProfilePicture = async (
   tutorId: string,
   file: File,

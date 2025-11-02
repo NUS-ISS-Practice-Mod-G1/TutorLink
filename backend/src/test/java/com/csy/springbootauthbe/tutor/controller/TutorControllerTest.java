@@ -1,5 +1,6 @@
 package com.csy.springbootauthbe.tutor.controller;
 
+import com.csy.springbootauthbe.common.aws.AwsService;
 import com.csy.springbootauthbe.tutor.dto.TutorDTO;
 import com.csy.springbootauthbe.tutor.service.TutorService;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,9 @@ class TutorControllerTest {
 
     @MockBean
     private TutorService tutorService;
+
+    @MockBean
+    private AwsService awsService;
 
     @MockBean
     private com.csy.springbootauthbe.config.JWTAuthenticationFilter jwtAuthenticationFilter;
