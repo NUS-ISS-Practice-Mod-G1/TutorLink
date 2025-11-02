@@ -142,6 +142,8 @@ public class StudentServiceImpl implements StudentService {
 
         ops.add(Aggregation.match(Criteria.where("_id").is(new ObjectId(tutorId))));
 
+        ops.add(Aggregation.match(Criteria.where("status").is("ACTIVE")));
+
         ops.add(Aggregation.project("subject", "hourlyRate", "availability", "userId", "firstname", "lastname", "email", "profileImageUrl", "description", "lessonType", "qualifications", "reviews"));
 
         Aggregation aggregation = Aggregation.newAggregation(ops);

@@ -64,8 +64,8 @@ public class WalletController {
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl(frontendBaseUrl + "/api/v1/wallet/success?studentId=" + studentId + "&amount=" + amount)
-                .setCancelUrl(frontendBaseUrl + "/api/v1/wallet/cancel")
+                .setSuccessUrl(frontendBaseUrl + "/wallet/success?studentId=" + studentId + "&amount=" + amount)
+                .setCancelUrl(frontendBaseUrl + "/wallet/cancel")
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)

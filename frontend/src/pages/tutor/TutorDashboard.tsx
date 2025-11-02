@@ -106,11 +106,7 @@ const TutorDashboard = () => {
     });
 
     const hasPastConfirmedBookings = pastBookedSlots.some((b) => {
-      if (b.status !== "confirmed") return false;
-
-      const bookingDate = new Date(b.date);
-      // Keep only bookings that are in the past
-      return bookingDate < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return false;
     });
     const hasRecentConfirmedBookings = recentBookedSlots.some((b) => {
       if (b.status !== "confirmed") return false;

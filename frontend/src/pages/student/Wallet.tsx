@@ -183,7 +183,7 @@ const WalletPage = () => {
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/student/dashboard")}
               className="mr-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
               ← Back
             </button>

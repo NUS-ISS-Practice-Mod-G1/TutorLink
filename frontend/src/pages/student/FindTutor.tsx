@@ -6,6 +6,7 @@ import { useAppSelector } from "@/redux/store";
 import { Range } from "react-range";
 import { useNavigate } from "react-router-dom";
 import defaultProfile from "../../assets/default-profile-pic.jpg";
+import tutorImg from "../../assets/tutor.jpg";
 
 const STEP = 1;
 const MIN = 0;
@@ -93,7 +94,7 @@ const FindTutor = () => {
           </div>
           <div className="w-full md:w-2/5 flex justify-center items-center">
             <img
-              src="/src/assets/tutor.jpg"
+              src={tutorImg}
               alt="Tutor illustration"
               className="rounded-lg object-cover w-full h-full max-h-[300px]"
             />
