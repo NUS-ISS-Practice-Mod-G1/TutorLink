@@ -1,6 +1,5 @@
 package com.csy.springbootauthbe.config;
 
-import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,18 +21,56 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/auth/**", "/v1/auth/**", "/api/v1/seq/next-id",
-                        "/api/v1/notifications/stream/**", "/api/v1/sse/notifications/stream/**",
-                                "/v3/api-docs/**", "/swagger-ui/**","/swagger-ui.html")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated())
-                .sessionManagement(session->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        auth.requestMatchers(
+                                        "/api/v1/auth/**",
+                                        "/v1/auth/**",
+                                        "/api/v1/seq/next-id",
+                                        "/api/v1/notifications/stream/**",
+                                        "/api/v1/sse/notifications/stream/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html"
+                                ).permitAll()
+                                .anyRequest().authenticated()
+                )
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(authProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // Add Secure HTTP Headers (fixes CSP + Clickjacking warnings)
+                .headers(headers -> headers
+                        // 1️⃣ Content Security Policy (modern protection)
+                        .contentSecurityPolicy(policy -> policy
+                                .policyDirectives(
+                                        "default-src 'self'; " +
+                                                "frame-ancestors 'none'; " + // Prevents Clickjacking (modern)
+                                                "script-src 'self' https://js.stripe.com; " +
+                                                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                                                "font-src 'self' https://fonts.gstatic.com; " +
+                                                "img-src 'self' data:; " +
+                                                "connect-src 'self' https:;"
+                                )
+                        )
+
+                        //  X-Frame-Options (legacy protection, same-origin allowed)
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+
+                        //  Prevent MIME sniffing (X-Content-Type-Options)
+                        .contentTypeOptions(contentTypeOptions -> {})
+
+                        //  Hide referrer data
+                        .referrerPolicy(referrer ->
+                                referrer.policy(
+                                        org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER
+                                )
+                        )
+                );
+
         return http.build();
     }
 }
